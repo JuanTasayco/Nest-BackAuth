@@ -2,11 +2,15 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto-user/create-user.dto';
 import { UpdateUserDto } from './dto-user/update-user.dto';
+import { User } from './entities/user.entity';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthService {
 
   register(bodyUser: CreateUserDto) {
+
     return { ...bodyUser, type: 'register' };
   }
 
@@ -22,5 +26,7 @@ export class AuthService {
   remove(id: number) {
     return `This action removes a #${id} auth`;
   }
+  /* */
+  constructor() { }
 
 }
