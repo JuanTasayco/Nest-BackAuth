@@ -1,6 +1,6 @@
 /* eslint-disable prettier/prettier */
 import { Controller, Post, Body, Patch, Param } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth.service';
 import { CreateUserDto } from './dto-user/create-user.dto';
 import { UpdateUserDto } from './dto-user/update-user.dto';
 /* updateUser principal module */

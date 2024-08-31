@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 import { IsNotEmpty, IsString } from "class-validator";
-/* propiedades avanzadas para mongodb*/
+import { TrimAndValidate } from "../validation/decorators/blank-spaces.validator";
 export class CreateUserDto {
-    @IsString()
-    @IsNotEmpty({ message: 'La cadena no debe estar vacía' })
+
+    @TrimAndValidate()
     name: string;
 
     @IsString()
