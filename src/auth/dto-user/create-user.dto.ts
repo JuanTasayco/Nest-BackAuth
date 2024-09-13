@@ -1,18 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsString } from "class-validator";
-import { TrimAndValidate } from "../validation/decorators/blank-spaces.validator";
+import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
 export class CreateUserDto {
+  @IsEmail()
+  @IsString()
+  email: string;
 
-    @TrimAndValidate()
-    name: string;
-
-    @IsString()
-    avatar: string;
-
-    @IsString()
-    username: string;
-
-    @IsString()
-    @IsNotEmpty()
-    password: string;
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }
