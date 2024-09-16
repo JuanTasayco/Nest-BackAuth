@@ -1,17 +1,25 @@
 /* eslint-disable prettier/prettier */
 import { BadRequestException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from '../dto-user/create-user.dto';
-import { UpdateUserDto } from '../dto-user/update-user.dto';
 import * as bycript from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from '../entities/user.entity';
+import { Usuarios } from '../entities/user.entity';
 import { Model } from 'mongoose';
 import { LoginUserDto } from '../dto-user/login-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { UpdateUserDto } from '../dto-user/update-user.dto';
 
 @Injectable()
 export class AuthService {
+
+  constructor(
+    @InjectModel(Usuarios.name, 'usuarios') private userModel: Model<Usuarios>,
+    private configService: ConfigService,
+    private jwtService: JwtService
+  ) { }
+
+
 
   async register(bodyUser: CreateUserDto) {
     if (bodyUser) {
@@ -19,8 +27,7 @@ export class AuthService {
         const saltOrRounds = 10;
         bodyUser.password = await bycript.hash(bodyUser.password, saltOrRounds);
         const createUser = new this.userModel(bodyUser);
-        const usuarioCreado = await createUser.save();
-        return usuarioCreado;
+        return await createUser.save();
       } catch (error) {
         if (error.code === 11000) {
           throw new HttpException('El usuario ya existe', HttpStatus.INTERNAL_SERVER_ERROR)
@@ -37,18 +44,21 @@ export class AuthService {
 
   async login(bodyUser: LoginUserDto) {
     try {
-      const dbUserConsult = await this.userModel.findOne({ username: bodyUser.username })
-
+      const dbUserConsult = await this.userModel.findOne({ email: bodyUser.email });
+      if (!dbUserConsult) throw new BadRequestException('No existe el usuario');
+      console.log(dbUserConsult)
+      console.log(bycript.compareSync(bodyUser.password, dbUserConsult.password))
       if (bycript.compareSync(bodyUser.password, dbUserConsult.password)) {
-        const token = this.generateJwt({ username: dbUserConsult.username, password: dbUserConsult.password });
+        const token = this.generateJwt({ email: dbUserConsult.email, password: dbUserConsult.password });
         /* to object permite entregar un archivo de js plano, y no los metadatos adicionales que trae mongoose */
+
         return { ...dbUserConsult.toObject(), token };
       } else {
-        return new BadRequestException('La contraseña o el usuario no son correctos').getResponse()
+        return new BadRequestException('La contraseña no es correcta').getResponse()
       }
 
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
@@ -63,14 +73,9 @@ export class AuthService {
     return 'Entrada exitosa';
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+  /*   remove(id: number) {
+      return `This action removes a #${id} auth`;
+    } */
 
-  constructor(
-    @InjectModel(User.name, 'users') private userModel: Model<User>,
-    private configService: ConfigService,
-    private jwtService: JwtService
-  ) { }
 
 }
